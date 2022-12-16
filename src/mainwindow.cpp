@@ -13,7 +13,7 @@ MainWindow::MainWindow(QWidget *parent)
 
 
 
-    fileDirButton = new QPushButton("Choose a file please.");
+    fileDirButton = new QPushButton("Choose a file.");
     nextButton = new QPushButton("Next");
 
     QVBoxLayout *mainLayout = new QVBoxLayout();
@@ -67,7 +67,7 @@ void MainWindow::onNextButtonClicked() {
 
 void MainWindow::onFileDirButtonClicked() {
     fileDir = (QFileDialog::getOpenFileName());
-    if(fileDir == "") fileDirButton -> setText("Choose a file please.");
+    if(fileDir == "") fileDirButton -> setText("Choose a file.");
     else fileDirButton -> setText(fileDir);
     qDebug() << fileDir;
 }

@@ -23,6 +23,7 @@ public:
     void displayImage();
     void preprocess(std::vector<std::vector<std::string>>& tokens);
     void scan();
+    void showError(QString str);
     ~View();
 private:
     QStackedWidget *stackedWidget;

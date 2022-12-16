@@ -3,7 +3,7 @@
 
 
 string createDefinition(Parser::Node* node, string nodeName, bool isRec = false) {
-    if (node -> typeOfproc == "ASSIGN") isRec = true;
+    if (node -> typeOfproc == "ASSIGN" || node -> typeOfproc == "READ") isRec = true;
 
     string changedLabel = "";
     if (node -> typeOfproc == "NUMBER") changedLabel = "const";
@@ -16,7 +16,6 @@ string createDefinition(Parser::Node* node, string nodeName, bool isRec = false)
     if(node -> typeOfproc == "EXP") nodeName += "   ordering=\"out\"";
 
     if (isRec) nodeName += "shape=rectangle";
-
     nodeName += "]";
     return nodeName;
 }
@@ -30,15 +29,16 @@ string createPoint(Parser::Node* node, map<Parser::Node*, string>& nodeNames) {
 }
 
 
-void dfs (Parser::Node* node, map<Parser::Node*, string>& nodeNames, int& index, string& definition, vector<vector<string>>& sameLevel,
+void dfs (Parser::Node* node, map<Parser::Node*, string>& nodeNames, int& index, string& definition, vector<Parser::Node* >& sameLevel,
                 vector<vector<Parser::Node*>>& childs, int level, bool isNext=false) {
     if (node == nullptr) return;
     index++;
-    nodeNames[node] = node ->typeOfproc + to_string(index);
+
+    nodeNames[node] = ((node -> typeOfproc == "(EXP)") ? "EXP" : node -> typeOfproc) + to_string(index);
     definition += '\n' + createDefinition(node, nodeNames[node], isNext); 
-    if (isNext || node -> nextNode != nullptr) {
-        if (sameLevel.size() <= level) sameLevel.push_back(vector<string>());
-        sameLevel[level].push_back(nodeNames[node]);
+    if (!isNext && node -> nextNode != nullptr) {
+        // if (sameLevel.size() <= level) sameLevel.push_back(vector<string>());
+        sameLevel.push_back(node);
     }
     if (node -> firstChild != nullptr || node -> secondChild != nullptr ) 
         childs.push_back({node, node -> firstChild, node -> secondChild});
@@ -58,8 +58,8 @@ string convertTree(Parser::Node* rootNode) {
     int index = 0;
     int level = 0;
     string definition = "";
-    vector<vector<string>> sameLevel;
-    dfs(rootNode -> nextNode, nodeNames, index, definition, sameLevel, childs, level, true);
+    vector<Parser::Node*> sameLevel;
+    dfs(rootNode -> nextNode, nodeNames, index, definition, sameLevel, childs, level, false);
 
     string arrows = "";
     for (int i = 0 ; i < childs.size(); ++i) {
@@ -68,9 +68,11 @@ string convertTree(Parser::Node* rootNode) {
     }
     string sameRank = "";
     for (int i = 0; i < sameLevel.size(); ++i) {
-        string level = sameLevel[i][0];
-        for(int j = 1; j < sameLevel[i].size(); ++j) {
-            level += " -> " + sameLevel[i][j];
+        Parser::Node* temp = sameLevel[i];
+        string level = nodeNames[temp];
+        while(temp -> nextNode != nullptr) {
+            temp = temp -> nextNode;
+            level += " -> " + nodeNames[temp];
         }
         sameRank += "{rank=\"same\" \n" + level + "\n}\n";
     }

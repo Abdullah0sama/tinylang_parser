@@ -50,7 +50,7 @@ void View::initialize () {
     imageWindow = new QWidget();
     QVBoxLayout* vb = new QVBoxLayout();
     vb -> addWidget(imageLabel);
-    vb -> setMargin(0);
+//    vb -> setMargin(0);
     imageWindow -> setLayout(vb);
     vb -> addWidget(imageLabel);
 }
@@ -99,6 +99,16 @@ void View::preprocess(vector<vector<string>>& tokens) {
 }
 void View::displayImage() {
 
+    if (fileContent.empty()) {
+        showError("Input is empty");
+        return;
+    }
+
+    if (tokensText->toPlainText().isEmpty()) {
+        showError("No tokens");
+        return;
+    }
+
     if (!isParseSuccess) {
         QMessageBox* somethingWrong = new QMessageBox(QMessageBox::Warning, "Warning", "", QMessageBox::Close);
         somethingWrong -> setText("Something went wrong during parsing!");
@@ -110,7 +120,7 @@ void View::displayImage() {
     out.open("syntax_tree.dot");
     out << dotFileContent;
     out.close();
-    system("./gen_syntaxtree.bash");
+    system("gen_syntaxtree.bat");
 
     QPixmap syntax_tree_image = QPixmap("./syntax_tree.png");
     imageLabel -> setPixmap(syntax_tree_image);
@@ -118,4 +128,10 @@ void View::displayImage() {
     imageLabel ->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
     imageWindow -> resize(syntax_tree_image.size());
     imageWindow -> show();
+}
+
+void View::showError(QString str) {
+    QMessageBox* msgBox = new QMessageBox(QMessageBox::Warning, "Warning", "", QMessageBox::Close);
+    msgBox -> setText(str);
+    msgBox -> exec();
 }
